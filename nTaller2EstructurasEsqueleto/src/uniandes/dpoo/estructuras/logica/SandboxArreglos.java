@@ -100,10 +100,12 @@ public class SandboxArreglos
         System.arraycopy(arregloCadenas, 0, nuevoArreglo, 0, arregloCadenas.length);
         nuevoArreglo[arregloCadenas.length] = cadena;
         arregloCadenas = nuevoArreglo;
+        
     }
 
     /**
      * Elimina todas las apariciones de un determinado valor dentro del arreglo de enteros
+     * ____
      * @param valor El valor que se va eliminar
      */
     public void eliminarEntero( int valor )
