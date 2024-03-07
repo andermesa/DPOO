@@ -16,6 +16,7 @@ public class GeneradorTiquetes
      * 
      * Este conjunto se utiliza para no correr el riesgo de repetir un código.
      */
+	private static Set<String> tiquetesRegistrados = new HashSet<>();
     private static Set<String> codigos = new HashSet<String>( );
 
     /**
@@ -45,9 +46,12 @@ public class GeneradorTiquetes
      * Registra que un cierto tiquete ya fue vendido, para que el generador de tiquetes no vaya a generar otro tiquete con el mismo código
      * @param unTiquete El tiquete existente
      */
-    public static void registrarTiquete( Tiquete unTiquete )
-    {
-        // TODO implementar
+    public static void registrarTiquete(Tiquete unTiquete) {
+        
+        String codigoTiquete = unTiquete.getCodigo();
+
+        
+        tiquetesRegistrados.add(codigoTiquete);
     }
 
     /**
@@ -57,7 +61,6 @@ public class GeneradorTiquetes
      */
     public static boolean validarTiquete( String codigoTiquete )
     {
-        // TODO implementar
-        return false;
+    	return tiquetesRegistrados.contains(codigoTiquete);
     }
 }

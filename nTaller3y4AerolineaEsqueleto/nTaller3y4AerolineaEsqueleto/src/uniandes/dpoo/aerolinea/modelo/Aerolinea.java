@@ -1,19 +1,20 @@
 package uniandes.dpoo.aerolinea.modelo;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import uniandes.dpoo.aerolinea.exceptions.InformacionInconsistenteException;
 import uniandes.dpoo.aerolinea.exceptions.VueloSobrevendidoException;
 import uniandes.dpoo.aerolinea.modelo.cliente.Cliente;
 import uniandes.dpoo.aerolinea.persistencia.CentralPersistencia;
-import uniandes.dpoo.aerolinea.persistencia.IPersistenciaAerolinea;
 import uniandes.dpoo.aerolinea.persistencia.IPersistenciaTiquetes;
 import uniandes.dpoo.aerolinea.persistencia.TipoInvalidoException;
 import uniandes.dpoo.aerolinea.tiquetes.Tiquete;
@@ -52,6 +53,12 @@ public class Aerolinea
      * Las llaves del mapa son los identificadores de los clientes, mientras que los valores son los clientes
      */
     private Map<String, Cliente> clientes;
+
+	private Vuelo[] listaDeVuelos;
+
+	private String linea;
+
+	private Aerolinea[] aerolineas;
 
     /**
      * Construye una nueva aerolínea con un nombre e inicializa todas las contenedoras con estructuras vacías
@@ -161,11 +168,17 @@ public class Aerolinea
      * @param fechaVuelo
      * @return Retorna el vuelo que coincide con los parámetros dados. Si no lo encuentra, retorna null.
      */
-    public Vuelo getVuelo( String codigoRuta, String fechaVuelo )
-    {
-        // TODO implementar
-        return null;
+    public Vuelo getVuelo(String codigoRuta, String fechaVuelo) {
+        listaDeVuelos = null;
+		
+        for (Vuelo vuelo : listaDeVuelos) {
+            if (vuelo.getCodigoRuta().equals(codigoRuta) && vuelo.getFecha().equals(fechaVuelo)) {
+                return vuelo; 
+            }
+        }
+        return null; 
     }
+
 
     /**
      * Retorna todos los clientes de la aerolínea
@@ -176,16 +189,16 @@ public class Aerolinea
         return clientes.values( );
     }
 
-    /**
-     * Retorna todos los tiquetes de la aerolínea, los cuales se recolectan vuelo por vuelo
-     * @return
-     */
-    public Collection<Tiquete> getTiquetes( )
-    {
-        // TODO implementar
-        return null;
+    public Collection<Tiquete> getTiquetes() {
+        List<Tiquete> tiquetes = new ArrayList<>();
+        
+        for (Vuelo vuelo : listaDeVuelos) {
+            tiquetes.addAll(vuelo.getTiquetes()); 
+        }
 
-    }
+        return tiquetes; 
+        }
+
 
     // ************************************************************************************
     //
@@ -201,9 +214,33 @@ public class Aerolinea
      * @throws IOException Lanza esta excepción si hay problemas leyendo el archivo
      * @throws InformacionInconsistenteException Lanza esta excepción si durante la carga del archivo se encuentra información que no es consistente
      */
-    public void cargarAerolinea( String archivo, String tipoArchivo ) throws TipoInvalidoException, IOException, InformacionInconsistenteException
-    {
-        // TODO implementar
+    public void cargarAerolinea(String archivo, String tipoArchivo) throws TipoInvalidoException, IOException, InformacionInconsistenteException {
+        if (!tipoArchivo.equals(CentralPersistencia.JSON) && !tipoArchivo.equals(CentralPersistencia.PLAIN)) {
+            throw new TipoInvalidoException("Tipo de archivo inválido: " + tipoArchivo);
+        }
+
+        Scanner scanner = null;
+        try {
+            scanner = new Scanner(new File(archivo));
+            while (scanner.hasNextLine()) {
+                setLinea(scanner.nextLine());
+                
+                if (tipoArchivo.equals(CentralPersistencia.JSON)) {
+                    
+                } else if (tipoArchivo.equals(CentralPersistencia.PLAIN)) {
+                    
+                }
+
+                
+            }
+        } catch (FileNotFoundException NoFile) {
+            
+            NoFile.printStackTrace();
+        } finally {
+            if (scanner != null) {
+                scanner.close();
+            }
+        }
     }
 
     /**
@@ -213,11 +250,27 @@ public class Aerolinea
      * @throws TipoInvalidoException Se lanza esta excepción si se indica un tipo de archivo inválido
      * @throws IOException Lanza esta excepción si hay problemas escribiendo en el archivo
      */
-    public void salvarAerolinea( String archivo, String tipoArchivo ) throws TipoInvalidoException, IOException
-    {
-        // TODO implementar
-    }
+    public void salvarAerolinea(String archivo, String tipoArchivo) throws TipoInvalidoException, IOException {
+        if (!tipoArchivo.equals(CentralPersistencia.JSON) && !tipoArchivo.equals(CentralPersistencia.PLAIN)) {
+            throw new TipoInvalidoException("Tipo de archivo inválido: " + tipoArchivo);
+        }
 
+        
+        java.io.FileWriter buscaraerolina = new java.io.FileWriter(archivo);
+
+        try {
+            aerolineas = null;
+			
+            for (Aerolinea info : aerolineas) {
+                
+            	buscaraerolina.write(info.toString());
+                buscaraerolina.write(System.lineSeparator());
+            }
+        } finally {
+            
+        	buscaraerolina.close();
+        }
+    }
     /**
      * Carga toda la información de sobre los clientes y tiquetes de una aerolínea a partir de un archivo
      * @param archivo El nombre del archivo.
@@ -263,10 +316,44 @@ public class Aerolinea
      * @param nombreAvion El nombre del avión que realizará el vuelo
      * @throws Exception Lanza esta excepción si hay algún problema con los datos suministrados
      */
-    public void programarVuelo( String fecha, String codigoRuta, String nombreAvion ) throws Exception
-    {
-        // TODO Implementar el método
+    
+
+    public void programarVuelo(String fecha, String codigoRuta, String nombreAvion) throws Exception {
+        
+        Ruta ruta = buscarRuta(codigoRuta);
+        Avion avion = buscarAvion(nombreAvion);
+        
+        if (ruta == null || avion == null) {
+            throw new Exception("La ruta o el avión especificados no existen");
+        }
+        
+        if (!avionDisponible(avion, fecha)) {
+            throw new Exception("El avión seleccionado está ocupado en la fecha especificada");
+        }
+        
+        
+        Vuelo nuevoVuelo = new Vuelo(fecha, codigoRuta, nombreAvion);
+        vuelos.add(nuevoVuelo);
     }
+
+    
+    private Ruta buscarRuta(String codigoRuta) {
+		return null;
+        
+    }
+
+    
+    private Avion buscarAvion(String nombreAvion) {
+		return null;
+        
+    }
+
+    
+    private boolean avionDisponible(Avion avion, String fecha) {
+		return false;
+        
+    }
+
 
     /**
      * Vende una cierta cantidad de tiquetes para un vuelo, verificando que la información sea correcta.
@@ -283,20 +370,78 @@ public class Aerolinea
      * @throws VueloSobrevendidoException Se lanza esta excepción si no hay suficiente espacio en el vuelo para todos los pasajeros
      * @throws Exception Se lanza esta excepción para indicar que no se pudieron vender los tiquetes por algún otro motivo
      */
-    public int venderTiquetes( String identificadorCliente, String fecha, String codigoRuta, int cantidad ) throws VueloSobrevendidoException, Exception
-    {
-        // TODO Implementar el método
-        return -1;
+    
+
+    public int venderTiquetes(String identificadorCliente, String fecha, String codigoRuta, int cantidad) throws VueloSobrevendidoException, Exception {
+        
+        Vuelo vuelo = buscarVueloPorFechaYRuta(fecha, codigoRuta);
+        Cliente cliente = buscarCliente(identificadorCliente);
+
+        if (vuelo == null || cliente == null || cantidad <= 0) {
+            throw new Exception("Datos incorrectos o insuficientes para vender los tiquetes");
+        }
+
+        
+        double precioTiquete = calcularPrecioTiquete1(vuelo.getFecha());
+
+        
+        if (vuelo.getCantidadAsientosDisponibles() < cantidad) {
+            throw new VueloSobrevendidoException("No hay suficientes asientos disponibles en el vuelo para vender los tiquetes solicitados");
+        }
+
+        
+        for (int i = 0; i < cantidad; i++) {
+            Tiquete tiquete = new Tiquete(vuelo, cliente, precioTiquete);
+            vuelo.agregarTiquete(tiquete);
+            cliente.agregarTiquete(tiquete);
+        }
+
+       
+        return (int) (precioTiquete * cantidad);
     }
 
+    
+    private double calcularPrecioTiquete1(String fecha) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	private Vuelo buscarVueloPorFechaYRuta(String fecha, String codigoRuta) {
+		return null;
+        
+    }
+
+    
+    private Cliente buscarCliente(String identificadorCliente) {
+		return null;
+        
+    }
+
+   
     /**
      * Registra que un cierto vuelo fue realizado
      * @param fecha La fecha del vuelo
      * @param codigoRuta El código de la ruta que recorrió el vuelo
      */
-    public void registrarVueloRealizado( String fecha, String codigoRuta )
-    {
-        // TODO Implementar el método
+   
+    public void registrarVueloRealizado(String fecha, String codigoRuta) {
+        
+        Vuelo vueloRealizado = buscarVueloRealizado(fecha, codigoRuta);
+
+        
+        if (vueloRealizado != null) {
+            vueloRealizado.marcarComoRealizado();
+        }
+    }
+
+    
+    private Vuelo buscarVueloRealizado(String fecha, String codigoRuta) {
+        for (Vuelo vuelo : vuelos) {
+            if (vuelo.getFecha().equals(fecha) && ((Tiquete) vuelo.getCodigoRuta()).getCodigo().equals(codigoRuta)) {
+                return vuelo;
+            }
+        }
+        return null; 
     }
 
     /**
@@ -304,10 +449,40 @@ public class Aerolinea
      * @param identificadorCliente El identificador del cliente
      * @return La suma de lo que pagó el cliente por los tiquetes sin usar
      */
-    public String consultarSaldoPendienteCliente( String identificadorCliente )
-    {
-        // TODO Implementar el método
-        return "";
+    
+
+    public String consultarSaldoPendienteCliente(String identificadorCliente) {
+        
+        Cliente cliente = buscarCliente(identificadorCliente);
+
+        
+        if (cliente != null) {
+            double saldoPendiente = calcularSaldoPendienteCliente(cliente);
+            return String.valueOf(saldoPendiente);
+        } else {
+            return "Cliente no encontrado";
+        }
     }
+
+    
+    
+    private double calcularSaldoPendienteCliente(Cliente cliente) {
+        double saldoPendiente = 0;
+        for (Tiquete tiquete : cliente.getTiquetes()) {
+            if (!tiquete.TiqueteUtilizado()) {
+                saldoPendiente += tiquete.getPrecio();
+            }
+        }
+        return saldoPendiente;
+    }
+
+	public String getLinea() {
+		return linea;
+	}
+
+	public void setLinea(String linea) {
+		this.linea = linea;
+	}
+
 
 }

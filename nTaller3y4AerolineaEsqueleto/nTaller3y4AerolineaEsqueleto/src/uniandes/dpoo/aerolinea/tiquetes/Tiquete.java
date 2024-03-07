@@ -11,7 +11,11 @@ public class Tiquete {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Collection<?> getCodigo() {
+	public Tiquete(Vuelo vuelo, Cliente cliente, double precioTiquete) {
+		// TODO Auto-generated constructor stub
+	}
+
+	public String getCodigo() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -35,5 +39,22 @@ public class Tiquete {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	public boolean TiqueteUtilizado() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public double getPrecio() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public void marcarComoUsado() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
 
 }

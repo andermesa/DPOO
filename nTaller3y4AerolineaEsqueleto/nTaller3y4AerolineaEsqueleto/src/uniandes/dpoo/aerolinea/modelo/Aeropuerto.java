@@ -1,5 +1,7 @@
 package uniandes.dpoo.aerolinea.modelo;
 
+import java.util.HashSet;
+
 /**
  * Esta clase encapsula la información sobre los aeropuertos e implementa algunas operaciones relacionadas con la ubicación geográfica de los aeropuertos.
  * 
@@ -8,8 +10,41 @@ package uniandes.dpoo.aerolinea.modelo;
 public class Aeropuerto
 {
     // TODO completar
-    
+	private String nombre;
+	private String codigo;
+	private String nombreCiudad;
+	private double latitud;
+	private double longitud;
+	private static HashSet<String> codigosUtilizados = new HashSet<>();
+	private static int RADIO_TERRESTRE = 6371;
+	
+	public Aeropuerto(String nombre, String codigo, String nombreCiudad, double latitud, double longitud) {
+		this.nombre=nombre;
+		this.codigo=codigo;
+		this.nombreCiudad=nombreCiudad;
+		this.latitud=latitud;
+		this.longitud=longitud;
+	};
 
+
+
+	public String getNombre() {
+		return nombre;
+	};
+	public String getCodigo() {
+		return codigo;
+	};
+	public String getNombreCiudad() {
+		return nombreCiudad;
+	};
+	public double getLatitud() {
+		return latitud;
+	};
+	public double getLongitud() {
+		return longitud;
+	};
+	
+	
     /**
      * Este método calcula la distancia *aproximada* entre dos aeropuertos. Hay fórmulas más precisas pero esta es suficientemente buena para el caso de la aerolínea.
      * 
@@ -23,6 +58,10 @@ public class Aeropuerto
      * @param aeropuerto2
      * @return La distancia en kilómetros entre los puntos
      */
+	
+	
+	
+	
     public static int calcularDistancia( Aeropuerto aeropuerto1, Aeropuerto aeropuerto2 )
     {
         // Convertir los ángulos a radianes para facilitar las operaciones trigonométricas
@@ -35,21 +74,22 @@ public class Aeropuerto
         double deltaX = ( lonAeropuerto2 - lonAeropuerto1 ) * Math.cos( ( latAeropuerto1 + latAeropuerto2 ) / 2 );
         double deltaY = ( latAeropuerto2 - latAeropuerto1 );
 
-        double RADIO_TERRESTRE = 0;
-		// Calcular la distancia real en kilómetros
+        // Calcular la distancia real en kilómetros
         double distancia = Math.sqrt( deltaX * deltaX + deltaY * deltaY ) * RADIO_TERRESTRE;
 
         return ( int )Math.round( distancia );
     }
 
-	private double getLongitud() {
-		// TODO Auto-generated method stub
-		return 0;
+
+
+	public static HashSet<String> getCodigosUtilizados() {
+		return codigosUtilizados;
 	}
 
-	private double getLatitud() {
-		// TODO Auto-generated method stub
-		return 0;
+
+
+	public static void setCodigosUtilizados(HashSet<String> codigosUtilizados) {
+		Aeropuerto.codigosUtilizados = codigosUtilizados;
 	}
 
 }
